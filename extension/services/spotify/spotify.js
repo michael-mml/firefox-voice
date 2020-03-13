@@ -5,8 +5,15 @@ import { shouldDisplayWarning } from "../../limiter.js";
 
 class Spotify extends serviceList.Service {
   async playQuery(query) {
-    await this.initTab("/services/spotify/player.js");
-    await this.callTab("search", { query, thenPlay: true });
+    try {
+      await this.initTab("/services/spotify/player.js");
+      await this.callTab("search", { query, thenPlay: true });
+    } catch (e) {
+      if (e.message === "You must enable DRM.") {
+        e.displayMessage = "You must enable DRM.";
+      }
+      throw e;
+    }
     if (this.tabCreated) {
       const isAudible = await this.pollTabAudible(this.tab.id, 3000);
       if (!isAudible) {
